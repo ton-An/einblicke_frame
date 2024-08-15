@@ -4,8 +4,8 @@ import 'package:einblicke_shared/einblicke_shared.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-import '../../../fixtures.dart';
-import '../../../mocks.dart';
+import '../../../../fixtures.dart';
+import '../../../../mocks.dart';
 
 void main() {
   late ImageRepositoryImpl imageRepositoryImpl;
