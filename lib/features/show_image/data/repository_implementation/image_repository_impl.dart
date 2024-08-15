@@ -7,9 +7,13 @@ import 'package:einblicke_frame/features/show_image/domain/repositories/image_re
 import 'package:einblicke_shared/einblicke_shared.dart';
 import 'package:einblicke_shared_clients/einblicke_shared_clients.dart';
 
-/// {@macro image_repository}
+/// {@template image_repository_impl}
+/// __Image Repository Implementation__ is the concrete implementation of
+/// the [ImageRepository] contract and handles the repository operations
+/// related to images.
+/// {@endtemplate}
 class ImageRepositoryImpl extends ImageRepository {
-  /// {@macro image_repository}
+  /// {@macro image_repository_impl}
   ImageRepositoryImpl({
     required this.imageRemoteDataSource,
     required this.failureHandler,
