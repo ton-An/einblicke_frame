@@ -25,48 +25,56 @@ void main() {
   setUpAll(() {
     // -- Fallbacks
     registerFallbackValue(tAccessToken);
+    registerFallbackValue(tWebSocketUrl);
+    registerFallbackValue(tDioException);
   });
 
   group("getImageIdStream", () {
     setUp(() {
       // -- Stubs
       when(() => mockImageRemoteDataSource.getImageIdStream(
-              accessToken: any(named: "accessToken")))
-          .thenAnswer((_) async => const Stream.empty());
+            accessToken: any(named: "accessToken"),
+            webSocketUrl: any(named: "webSocketUrl"),
+          )).thenAnswer((_) => Stream.fromIterable([tImageId]));
     });
 
-    test("should get image id stream from remote data source and return it",
+    test(
+        "should get image id stream from remote data source and return the contents",
         () async {
       // act
-      final result =
-          await imageRepositoryImpl.getImageIdStream(accessToken: tAccessToken);
+      final result = imageRepositoryImpl.getImageIdStream(
+        accessToken: tAccessToken,
+        webSocketUrl: tWebSocketUrl,
+      );
 
       // assert
-      expect(result, const Right(Stream<Either<Failure, String>>.empty()));
+      await expectLater(result, emits(const Right(tImageId)));
       verify(
         () => mockImageRemoteDataSource.getImageIdStream(
           accessToken: tAccessToken,
+          webSocketUrl: tWebSocketUrl,
         ),
       );
     });
 
-    test("should re-map [DioException]s to [Failure]s if they are thrown",
+    test(
+        "should return a [MalformedWebSocketMessageFailure] if a [FormatException] is thrown",
         () async {
       // arrange
       when(() => mockImageRemoteDataSource.getImageIdStream(
             accessToken: any(named: "accessToken"),
-          )).thenThrow(tDioException);
-      when(() => mockFailureHandler.dioExceptionMapper(tDioException))
-          .thenReturn(tMappedDioFailure);
+            webSocketUrl: any(named: "webSocketUrl"),
+          )).thenAnswer((_) => Stream.error(const FormatException()));
 
       // act
-      final result = await imageRepositoryImpl.getImageIdStream(
+      final result = imageRepositoryImpl.getImageIdStream(
         accessToken: tAccessToken,
+        webSocketUrl: tWebSocketUrl,
       );
 
       // assert
-      expect(result, const Left(tMappedDioFailure));
-      verify(() => mockFailureHandler.dioExceptionMapper(tDioException));
+      await expectLater(
+          result, emits(const Left(MalformedWebSocketMessageFailure())));
     });
   });
 
@@ -95,16 +103,19 @@ void main() {
       );
     });
 
-    test("should re-map [DioException]s to [Failure]s if they are thrown", () {
+    test("should re-map [DioException]s to [Failure]s if they are thrown",
+        () async {
       // arrange
       when(() => mockImageRemoteDataSource.getImage(
             accessToken: any(named: "accessToken"),
             imageId: any(named: "imageId"),
           )).thenThrow(tDioException);
-      when(() => mockFailureHandler.dioExceptionMapper(tDioException));
+      when(
+        () => mockFailureHandler.dioExceptionMapper(any()),
+      ).thenAnswer((invocation) => tMappedDioFailure);
 
       // act
-      final result = imageRepositoryImpl.getImage(
+      final result = await imageRepositoryImpl.getImage(
         accessToken: tAccessToken,
         imageId: tImageId,
       );

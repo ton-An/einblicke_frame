@@ -10,33 +10,33 @@ import '../../../../mocks.dart';
 void main() {
   late GetImageStream getImageStream;
   late MockImageRepository mockImageRepository;
-  late MockServerAuthWrapper<Stream<Either<Failure, String>>>
-      mockServerAuthWrapper;
+  late MockStreamServerAuthWrapper<String> mockStreamServerAuthWrapper;
   late MockGetImage mockGetImage;
 
   setUp(() {
     // -- Definitions
     mockImageRepository = MockImageRepository();
-    mockServerAuthWrapper =
-        MockServerAuthWrapper<Stream<Either<Failure, String>>>();
+    mockStreamServerAuthWrapper = MockStreamServerAuthWrapper<String>();
     mockGetImage = MockGetImage();
     getImageStream = GetImageStream(
       imageRepository: mockImageRepository,
-      serverAuthWrapper: mockServerAuthWrapper,
+      streamServerAuthWrapper: mockStreamServerAuthWrapper,
       getImage: mockGetImage,
+      secrets: tFakeSecrets,
     );
 
     // -- Stubs
-    when(() => mockServerAuthWrapper.call(serverCall: any(named: 'serverCall')))
-        .thenAnswer(
-      (_) async => Right(
-        Stream.fromIterable(const [Right(tImageId), Right(tImageId)]),
-      ),
+    when(() => mockStreamServerAuthWrapper.call(
+        serverCall: any(named: 'serverCall'))).thenAnswer(
+      (_) => Stream.fromIterable(const [Right(tImageId), Right(tImageId)]),
     );
-    when(() =>
-        mockImageRepository.getImageIdStream(
-            accessToken: any(named: "accessToken"))).thenAnswer((_) async =>
-        Right(Stream.fromIterable(const [Right(tImageId), Right(tImageId)])));
+    when(
+      () => mockImageRepository.getImageIdStream(
+        accessToken: any(named: "accessToken"),
+        webSocketUrl: any(named: "webSocketUrl"),
+      ),
+    ).thenAnswer(
+        (_) => Stream.fromIterable(const [Right(tImageId), Right(tImageId)]));
 
     when(() => mockGetImage.call(imageId: any(named: "imageId")))
         .thenAnswer((_) async => Right(tImageBytes));
@@ -45,6 +45,7 @@ void main() {
   setUpAll(() {
     // -- Fallbacks
     registerFallbackValue(tAccessToken);
+    registerFallbackValue(tWebSocketUrl);
   });
 
   test(
@@ -58,7 +59,7 @@ void main() {
     );
 
     final verificationResult = verify(
-      () => mockServerAuthWrapper(
+      () => mockStreamServerAuthWrapper(
         serverCall: captureAny(named: "serverCall"),
       ),
     );
@@ -70,15 +71,16 @@ void main() {
     verify(
       () => mockImageRepository.getImageIdStream(
         accessToken: tAccessToken,
+        webSocketUrl: tWebSocketUrl,
       ),
     );
   });
 
   test("should relay [Failure]s", () async {
     // arrange
-    when(() => mockServerAuthWrapper.call(serverCall: any(named: "serverCall")))
-        .thenAnswer(
-      (_) async => const Left(UnauthorizedFailure()),
+    when(() => mockStreamServerAuthWrapper.call(
+        serverCall: any(named: "serverCall"))).thenAnswer(
+      (_) => Stream.fromIterable([const Left(UnauthorizedFailure())]),
     );
 
     // act & assert

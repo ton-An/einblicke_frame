@@ -13,10 +13,14 @@ abstract class ImageRepository {
   /// - [Stream] of [String] containing the image id
   ///
   /// Failures:
-  /// - TBD
-  /// - {@macro converted_dio_exceptions}
-  Future<Either<Failure, Stream<Either<Failure, String>>>> getImageIdStream({
+  /// - [DatabaseReadFailure]
+  /// - [NoImagesFoundFailure]
+  /// - [StorageReadFailure]
+  /// - [UnauthorizedFailure]
+  /// - [MalformedWebSocketMessageFailure]
+  Stream<Either<Failure, String>> getImageIdStream({
     required AuthenticationToken accessToken,
+    required Uri webSocketUrl,
   });
 
   /// Gets an image from the server
@@ -25,7 +29,10 @@ abstract class ImageRepository {
   /// - [Uint8List] containing the image data
   ///
   /// Failures:
-  /// - TBD
+  /// - [DatabaseReadFailure]
+  /// - [StorageReadFailure]
+  /// - [ImageNotFoundFailure]
+  /// - [UnauthorizedFailure]
   /// - {@macro converted_dio_exceptions}
   Future<Either<Failure, Uint8List>> getImage({
     required AuthenticationToken accessToken,

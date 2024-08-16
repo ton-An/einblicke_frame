@@ -104,10 +104,12 @@ class FakeSecret extends Secrets {
   String get clientSecret => "einblicke client secret";
 
   @override
-  String get serverUrl => "einblicke server url";
+  String get serverUrl => "http://localhost:8080";
 }
 
 final FakeSecret tFakeSecrets = FakeSecret();
+
+final Uri tWebSocketUrl = Uri.parse("ws://localhost:8080/frame/image_socket");
 
 final Map<String, dynamic> tSignInRequestHeaders = {
   "client_id": tFakeSecrets.clientId,
@@ -120,6 +122,7 @@ const String tImagePath = "../../../fixtures/test_image.jpg";
 const String tFrameId = "my_unique_frame";
 
 const String tImageId = "testImageId";
+const String tImageId2 = "testImageId2";
 
 final Uint8List tImageBytes = Uint8List.fromList([1, 2, 3, 4, 5]);
 

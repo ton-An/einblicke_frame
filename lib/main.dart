@@ -2,6 +2,7 @@ import 'package:einblicke_frame/core/dependency_injector.dart';
 import 'package:einblicke_frame/features/authentication/presentation/cubits/sign_in_cubit/sign_in_cubit.dart';
 import 'package:einblicke_frame/features/authentication/presentation/pages/sign_in_page.dart';
 import 'package:einblicke_frame/features/authentication/presentation/pages/splash_screen.dart';
+import 'package:einblicke_frame/features/show_image/presentation/cubits/show_image_cubit.dart';
 import 'package:einblicke_frame/features/show_image/presentation/pages/image_screen.dart';
 import 'package:einblicke_shared_clients/einblicke_shared_clients.dart';
 import 'package:flutter/cupertino.dart';
@@ -84,8 +85,11 @@ class EinblickeFrame extends StatelessWidget {
               ),
               GoRoute(
                 path: ImageScreen.pageName,
-                pageBuilder: (context, state) => const CupertinoPage(
-                  child: ImageScreen(),
+                pageBuilder: (context, state) => CupertinoPage(
+                  child: BlocProvider(
+                    create: (context) => getIt<ShowImageCubit>(),
+                    child: const ImageScreen(),
+                  ),
                 ),
               ),
             ],

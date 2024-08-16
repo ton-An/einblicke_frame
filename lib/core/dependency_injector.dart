@@ -1,6 +1,15 @@
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
 import 'package:einblicke_frame/core/secrets.dart';
 import 'package:einblicke_frame/features/authentication/presentation/cubits/sign_in_cubit/sign_in_cubit.dart';
+import 'package:einblicke_frame/features/show_image/data/data_sources/image_remote_data_source.dart';
+import 'package:einblicke_frame/features/show_image/data/repository_implementation/image_repository_impl.dart';
+import 'package:einblicke_frame/features/show_image/domain/repositories/image_repository.dart';
+import 'package:einblicke_frame/features/show_image/domain/usecases/get_image.dart';
+import 'package:einblicke_frame/features/show_image/domain/usecases/get_image_stream.dart';
+import 'package:einblicke_frame/features/show_image/domain/usecases/stream_server_auth_wrapper.dart';
+import 'package:einblicke_frame/features/show_image/presentation/cubits/show_image_cubit.dart';
 import 'package:einblicke_shared/einblicke_shared.dart';
 import 'package:einblicke_shared_clients/einblicke_shared_clients.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -33,6 +42,9 @@ void initGetIt() {
 
   // =+=+ Authentication +=+= //
   _registerAuthentication();
+
+  // =+=+ Show Image +=+= //
+  _registerShowImage();
 }
 
 void _registerCore() {
@@ -82,6 +94,55 @@ void _registerAuthentication() {
   getIt.registerFactory(
     () => SignInCubit(
       signInUsecase: getIt(),
+    ),
+  );
+}
+
+void _registerShowImage() {
+  // -- Data -- //
+  getIt.registerLazySingleton<ImageRemoteDataSource>(
+    () => ImageRemoteDataSourceImpl(
+      serverRemoteHandler: getIt(),
+      failureMapper: getIt(),
+      secrets: getIt(),
+    ),
+  );
+
+  getIt.registerLazySingleton<ImageRepository>(
+    () => ImageRepositoryImpl(
+      imageRemoteDataSource: getIt(),
+      failureHandler: getIt(),
+    ),
+  );
+
+  // -- Domain -- //
+  getIt.registerLazySingleton(
+    () => ServerAuthWrapper<Uint8List>(
+      authenticationRepository: getIt(),
+      refreshTokenBundle: getIt(),
+    ),
+  );
+  getIt.registerLazySingleton(
+      () => GetImage(imageRepository: getIt(), serverAuthWrapper: getIt()));
+  getIt.registerLazySingleton(
+    () => StreamServerAuthWrapper<String>(
+      authenticationRepository: getIt(),
+      refreshTokenBundle: getIt(),
+    ),
+  );
+  getIt.registerLazySingleton(
+    () => GetImageStream(
+      imageRepository: getIt(),
+      streamServerAuthWrapper: getIt(),
+      getImage: getIt(),
+      secrets: getIt(),
+    ),
+  );
+
+  // -- Presentation -- //
+  getIt.registerFactory(
+    () => ShowImageCubit(
+      getImageStream: getIt(),
     ),
   );
 }

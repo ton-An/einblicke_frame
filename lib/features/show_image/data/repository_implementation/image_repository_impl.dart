@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:dartz/dartz.dart';
@@ -23,34 +24,37 @@ class ImageRepositoryImpl extends ImageRepository {
   final RepositoryFailureHandler failureHandler;
 
   @override
-  Future<Either<Failure, Stream<Either<Failure, String>>>> getImageIdStream(
-      {required AuthenticationToken accessToken}) async {
+  Stream<Either<Failure, String>> getImageIdStream({
+    required AuthenticationToken accessToken,
+    required Uri webSocketUrl,
+  }) async* {
     try {
-      final Stream<Either<Failure, String>> imageIdStream =
-          await imageRemoteDataSource.getImageIdStream(
-              accessToken: accessToken);
+      Stream<String> imageIdStream = imageRemoteDataSource.getImageIdStream(
+          accessToken: accessToken, webSocketUrl: webSocketUrl);
 
-      return Right(imageIdStream);
+      await for (String imageId in imageIdStream) {
+        yield Right(imageId);
+      }
     } catch (exception) {
-      if (exception is DatabaseReadFailure ||
+      if (exception is FormatException) {
+        yield const Left(MalformedWebSocketMessageFailure());
+      } else if (exception is UnauthorizedFailure ||
+          exception is DatabaseReadFailure ||
           exception is NoImagesFoundFailure ||
-          exception is StorageReadFailure) {
-        return Left(exception as Failure);
-      } else if (exception is DioException) {
-        return Left(failureHandler.dioExceptionMapper(exception));
+          exception is StorageReadFailure ||
+          exception is MalformedWebSocketMessageFailure) {
+        yield Left(exception as Failure);
       } else {
         rethrow;
       }
     }
   }
 
-// - [DatabaseReadFailure]
-  /// - [NoImagesFoundFailure]
-  /// - [StorageReadFailure]
   @override
-  Future<Either<Failure, Uint8List>> getImage(
-      {required AuthenticationToken accessToken,
-      required String imageId}) async {
+  Future<Either<Failure, Uint8List>> getImage({
+    required AuthenticationToken accessToken,
+    required String imageId,
+  }) async {
     try {
       final Uint8List imageBytes = await imageRemoteDataSource.getImage(
         accessToken: accessToken,
