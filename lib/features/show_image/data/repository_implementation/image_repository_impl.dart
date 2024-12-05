@@ -28,26 +28,8 @@ class ImageRepositoryImpl extends ImageRepository {
     required AuthenticationToken accessToken,
     required Uri webSocketUrl,
   }) async* {
-    try {
-      Stream<String> imageIdStream = imageRemoteDataSource.getImageIdStream(
-          accessToken: accessToken, webSocketUrl: webSocketUrl);
-
-      await for (String imageId in imageIdStream) {
-        yield Right(imageId);
-      }
-    } catch (exception) {
-      if (exception is FormatException) {
-        yield const Left(MalformedWebSocketMessageFailure());
-      } else if (exception is UnauthorizedFailure ||
-          exception is DatabaseReadFailure ||
-          exception is NoImagesFoundFailure ||
-          exception is StorageReadFailure ||
-          exception is MalformedWebSocketMessageFailure) {
-        yield Left(exception as Failure);
-      } else {
-        rethrow;
-      }
-    }
+    yield* imageRemoteDataSource.getImageIdStream(
+        accessToken: accessToken, webSocketUrl: webSocketUrl);
   }
 
   @override

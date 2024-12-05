@@ -1,6 +1,6 @@
 import 'package:einblicke_frame/core/dependency_injector.dart';
-import 'package:einblicke_frame/features/authentication/presentation/cubits/sign_in_cubit/sign_in_cubit.dart';
-import 'package:einblicke_frame/features/authentication/presentation/pages/sign_in_page.dart';
+import 'package:einblicke_frame/features/authentication/presentation/cubits/pairing_cubit/pairing_cubit.dart';
+import 'package:einblicke_frame/features/authentication/presentation/pages/pairing_page.dart';
 import 'package:einblicke_frame/features/authentication/presentation/pages/splash_screen.dart';
 import 'package:einblicke_frame/features/show_image/presentation/cubits/show_image_cubit.dart';
 import 'package:einblicke_frame/features/show_image/presentation/pages/image_screen.dart';
@@ -76,11 +76,11 @@ class EinblickeFrame extends StatelessWidget {
                 ),
               ),
               GoRoute(
-                path: SignInPage.pageName,
+                path: PairingPage.pageName,
                 pageBuilder: (context, state) => CupertinoPage(
                   child: BlocProvider(
-                      create: (context) => getIt<SignInCubit>(),
-                      child: const SignInPage()),
+                      create: (context) => getIt<PairingCubit>(),
+                      child: const PairingPage()),
                 ),
               ),
               GoRoute(

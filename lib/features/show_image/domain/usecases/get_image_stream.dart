@@ -52,6 +52,7 @@ class GetImageStream {
     );
 
     await for (Either<Failure, String> imageIdEither in imageStream) {
+      print(imageIdEither);
       yield* imageIdEither.fold(
         (Failure failure) async* {
           yield Left(failure);

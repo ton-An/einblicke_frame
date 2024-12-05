@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:async/async.dart' show StreamGroup;
+import 'package:async/async.dart';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:einblicke_shared/einblicke_shared.dart';
@@ -29,7 +29,7 @@ abstract class ImageRemoteDataSource {
   /// - [StorageReadFailure]
   /// - [UnauthorizedFailure]
   /// - [MalformedWebSocketMessageFailure]
-  Stream<String> getImageIdStream({
+  Stream<Either<Failure, String>> getImageIdStream({
     required AuthenticationToken accessToken,
     required Uri webSocketUrl,
   });
@@ -80,7 +80,7 @@ class ImageRemoteDataSourceImpl extends ImageRemoteDataSource {
   }
 
   @override
-  Stream<String> getImageIdStream({
+  Stream<Either<Failure, String>> getImageIdStream({
     required AuthenticationToken accessToken,
     required Uri webSocketUrl,
   }) async* {
@@ -99,16 +99,16 @@ class ImageRemoteDataSourceImpl extends ImageRemoteDataSource {
 
     await for (dynamic message in mergedStream) {
       if (message is Disconnected) {
-        throw const UnauthorizedFailure();
+        yield const Left(UnauthorizedFailure());
       } else if (message is String) {
         final Map<String, dynamic> json = jsonDecode(message);
 
         if (json.containsKey("image_id")) {
-          yield json["image_id"]!;
+          yield Right(json["image_id"]!);
         } else if (json.containsKey("code")) {
-          throw failureMapper.mapCodeToFailure(json["code"]!);
+          yield Left(failureMapper.mapCodeToFailure(json["code"]!));
         } else {
-          throw const MalformedWebSocketMessageFailure();
+          yield const Left(MalformedWebSocketMessageFailure());
         }
       }
     }

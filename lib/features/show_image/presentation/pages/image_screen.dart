@@ -34,6 +34,10 @@ class _ImageScreenState extends State<ImageScreen> {
           context
               .read<InAppNotificationCubit>()
               .sendFailureNotification(state.failure);
+
+          Future.delayed(const Duration(seconds: 30), () {
+            context.read<InAppNotificationCubit>().dismissNotification();
+          });
         }
       }, builder: (context, state) {
         if (state is ShowImageLoaded) {

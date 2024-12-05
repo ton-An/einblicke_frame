@@ -2,7 +2,12 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:einblicke_frame/core/secrets.dart';
-import 'package:einblicke_frame/features/authentication/presentation/cubits/sign_in_cubit/sign_in_cubit.dart';
+import 'package:einblicke_frame/features/authentication/data/datasources/pairing_data_source.dart';
+import 'package:einblicke_frame/features/authentication/data/repositories/pairing_repository_impl.dart';
+import 'package:einblicke_frame/features/authentication/domain/models/pairing_event.dart';
+import 'package:einblicke_frame/features/authentication/domain/repositories/pairing_repository.dart';
+import 'package:einblicke_frame/features/authentication/domain/usecases/pairing_stream_handler.dart';
+import 'package:einblicke_frame/features/authentication/presentation/cubits/pairing_cubit/pairing_cubit.dart';
 import 'package:einblicke_frame/features/show_image/data/data_sources/image_remote_data_source.dart';
 import 'package:einblicke_frame/features/show_image/data/repository_implementation/image_repository_impl.dart';
 import 'package:einblicke_frame/features/show_image/domain/repositories/image_repository.dart';
@@ -72,7 +77,6 @@ void _registerAuthentication() {
       serverRemoteHandler: getIt(),
     ),
   );
-
   getIt.registerLazySingleton<AuthenticationRepository>(
     () => AuthenticationRepositoryImpl(
       authenticationLocalDataSource: getIt(),
@@ -80,21 +84,45 @@ void _registerAuthentication() {
       failureHandler: getIt(),
     ),
   );
+  getIt.registerLazySingleton<PairingRemoteDataSource>(
+    () => PairingRemoteDataSourceImpl(
+      failureMapper: getIt(),
+    ),
+  );
+  getIt.registerLazySingleton<PairingRepository>(
+    () => PairingRepositoryImpl(
+      pairingRemoteDataSource: getIt(),
+    ),
+  );
 
   // -- Domain -- //
   getIt.registerLazySingleton(
-      () => SignIn(authenticationRepository: getIt(), secrets: getIt()));
+    () => IsSingnedIn(authenticationRepository: getIt()),
+  );
   getIt.registerLazySingleton(
-      () => IsSingnedIn(authenticationRepository: getIt()));
+    () => RefreshTokenBundle(
+      authenticationRepository: getIt(),
+    ),
+  );
   getIt.registerLazySingleton(
-      () => RefreshTokenBundle(authenticationRepository: getIt()));
+    () => StreamServerAuthWrapper<PairingEvent>(
+      authenticationRepository: getIt(),
+      refreshTokenBundle: getIt(),
+    ),
+  );
+  getIt.registerLazySingleton(
+    () => PairingStreamHandler(
+      streamServerAuthWrapper: getIt(),
+      pairingRepository: getIt(),
+      secrets: getIt(),
+      authenticationRepository: getIt(),
+    ),
+  );
 
   // -- Presentation -- //
   getIt.registerFactory(() => AuthenticationStatusCubit(isSignedIn: getIt()));
   getIt.registerFactory(
-    () => SignInCubit(
-      signInUsecase: getIt(),
-    ),
+    () => PairingCubit(pairingStreamHandler: getIt()),
   );
 }
 

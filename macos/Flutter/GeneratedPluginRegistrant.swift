@@ -7,8 +7,10 @@ import Foundation
 
 import flutter_secure_storage_macos
 import path_provider_foundation
+import qr_bar_code
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
   FlutterSecureStoragePlugin.register(with: registry.registrar(forPlugin: "FlutterSecureStoragePlugin"))
   PathProviderPlugin.register(with: registry.registrar(forPlugin: "PathProviderPlugin"))
+  QrBarCodePlugin.register(with: registry.registrar(forPlugin: "QrBarCodePlugin"))
 }
