@@ -17,8 +17,33 @@ void main() {
 
   initGetIt();
 
+  // sendImage();
+
   runApp(EinblickeFrame());
 }
+
+// void sendImage() {
+//   // Create a 256x256 8-bit (default) rgb (default) image.
+//   final image = img.Image(width: 256, height: 256);
+//   // Iterate over its pixels
+
+//   for (int i = 0; i < image.length; i++) {
+//     // first half of the image is black, second half is white
+//     final x = i % 256;
+//     final y = i ~/ 256;
+
+//     if (i < image.length / 2) {
+//       image..setPixel(x, y, img.ColorInt8.rgb(0, 0, 0));
+//     } else {
+//       image..setPixel(x, y, img.ColorInt8.rgb(255, 255, 255));
+//     }
+//     // Set the pixels red value to its x position value, creating a gradient.
+//   }
+//   // Encode the resulting image to the PNG image format.
+//   final png = img.encodePng(image);
+//   File('example.png').writeAsBytesSync(png);
+//   // Write the PNG formatted data to a file.
+// }
 
 class EinblickeFrame extends StatelessWidget {
   EinblickeFrame({super.key});
