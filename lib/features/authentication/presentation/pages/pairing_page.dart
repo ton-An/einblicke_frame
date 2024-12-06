@@ -35,6 +35,10 @@ class _PairingPageState extends State<PairingPage> {
     super.initState();
 
     context.read<PairingCubit>().initPairing();
+
+    Future.delayed(const Duration(seconds: 1), () {
+      _captureAndSave();
+    });
   }
 
   Future<void> _captureAndSave() async {
