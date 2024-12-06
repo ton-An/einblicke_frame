@@ -55,6 +55,7 @@ class _PairingPageState extends State<PairingPage> {
 
   @override
   Widget build(BuildContext context) {
+    print("asdasd");
     return RepaintBoundary(
       key: globalKey,
       child: CupertinoPageScaffold(
